@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Hello OAuth2</title>
+  <script type="text/javascript" src="scripts/main.js" defer></script>
+  <link rel="stylesheet" type="text/css" href="assets/styles.css">
+</head>
+
+<body>
+  <h1> Login </h1>
+  <form>
+    <label for="ssourl">RHSSO URL:</label>
+    <input id="ssourl" type="text" required="">
+    <label for="realm">Realm:</label>
+    <input id="realm" type="text" required="">
+    <label for="client">Client:</label>
+    <input id="client" type="text" required="">
+    <label for="redirect">Redirect URL:</label>
+    <input id="redirect" type="text" required="">
+
+    <input id="submitsetting" type="submit" value="Save">
+  </form>
+
+  <a id="login" href="www.telekom.de" class="disabled">Login</a>
+</body>
+
+</html>
