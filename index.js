@@ -20,7 +20,7 @@ function buildURL() {
   return `https://${process.env['SSO']}/auth/realms/${realm}/protocol/openid-connect/auth?${params}`
 }
 
-function buildLoginPage({ URL }) {
+function buildIndexPage({ URL }) {
   return `<!DOCTYPE HTML>
             <html>
               <head>
@@ -48,22 +48,40 @@ function buildLoginPage({ URL }) {
             </html>`
 }
 
+function buildLoginPage({ CODE }) {
+  return `<!DOCTYPE HTML>
+            <html>
+              <head>
+                <title >Hello OAuth2</title>
+                <script type="text/javascript" src="scripts/main.js" defer></script>
+                <link rel="stylesheet" type="text/css" href="assets/styles.css">
+              </head>
+              <body>
+                <h1 id="login-page"> Code </h1>
+                This is the code from realm<div class="realm-class">undefined</div>
+                <div class="code">
+                  The access code is
+                  <div class="access-code">${CODE}</div>
+                </div>
+                <a id="get-access-token" href="" class="disabled">Get Access Token</a>
+              </body>
+            </html>`
+}
+
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
-  //let page = buildLoginPage({ URL: buildURL() })
+  //let page = buildIndexPage({ URL: buildURL() })
   //res.send(page)
   res.sendFile(path.join(__dirname + '/public/views/index.html'));
 })
 
 app.get('/login', (req, res) => {
-
-  console.log(localStorage.getItem('realm'));
-
-
-  res.send(`<h1>Willkommen!</h1>`)
-  
+    // TODO: check code is set, eroor handling if not
+    let page = buildLoginPage({ CODE: req.query.code });
+    res.send(page);
 })
+
 
 // convention over configuration -> 8080
 var server = app.listen(PORT)
