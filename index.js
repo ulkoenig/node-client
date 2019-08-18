@@ -4,7 +4,10 @@ var _ = require('lodash')
 //let okd = require('okd-runner')
 let qs = require('querystring')
 let oauth = require('./lib/oauth')
+var jwt = require('jsonwebtoken');
 let pages = require('./lib/pages')
+// HS256 secrets are typically 128-bit random strings, for example hex-encoded:
+let secret = "nfBg9oPKsSG7sLE5PtbdWH0gYkrmjfUVmbOAnhsLpBw" //Buffer.from('fe1a1915a379f3be5394b64d14794932', 'hex')
 
 let env = {
   SSO: isSet(process.env['SSO']),
@@ -16,7 +19,8 @@ let env = {
   STEP: "",
   ACCESS_CODE: "",
   ACCESS_TOKEN: "",
-  USER_DATA: ""
+  USER_DATA: "",
+  JWT_TOKEN: "",
 }
 
 let page = fs.readFileSync(`./public/views/page.html`);
@@ -82,6 +86,9 @@ app.get('/token', (req, res) => {
       .then(function (resp) {
         // resp seams not a vaild JSON. Therefore thi stringify and parse fix this problem
         env.ACCESS_TOKEN = JSON.parse(JSON.stringify(resp));
+        var jwt_token = jwt.decode(JSON.parse(resp).access_token, { json: true });
+        env.JWT_TOKEN = JSON.stringify(jwt_token);
+        console.log('jwt_token', jwt_token);
         // save access token in para for calling getUserInfo 
         para.access_token = JSON.parse(resp).access_token,
         oauth.getUserInfo(para)

@@ -32,10 +32,10 @@ let pageState = DEFAULT;
 
 if (step == "settings-tab") {
   pageState = localStorage.getItem('pageState');
-  if( pageState == SAVED ){
+  if (pageState == SAVED) {
     loadSetting();
     //localStorage.setItem('pageState', LOADED);
-  }else{
+  } else {
     localStorage.setItem('pageState', DEFAULT);
   }
   $('#myTab a[href="#settings"]').tab('show') // Select tab by name
@@ -45,13 +45,13 @@ if (step == "settings-tab") {
   document.querySelector('#sso-header-link').href = HREF;
 } else if (step == "access-code-tab") {
   pageState = localStorage.getItem('pageState');
-  if( pageState == SAVED ){
-    loadSetting();  
+  if (pageState == SAVED) {
+    loadSetting();
   }
   $('[href="#access-code"]').tab('show');
   document.querySelector('#sso-header-link').href = localStorage.getItem('ssoTestClientHref');
   //prettyPrint('access-code-response','#resp-access-code');
-  
+
   // get values from local storage
   const accessCode = document.getElementById('resp-access-code');
 
@@ -78,14 +78,15 @@ if (step == "settings-tab") {
   document.querySelector('#get-access-token').href = "/token?" + query;
 } else if (step == "access-token-tab") {
   pageState = localStorage.getItem('pageState');
-  if( pageState == SAVED ){
-    loadSetting();  
+  if (pageState == SAVED) {
+    loadSetting();
   }
 
   $('[href="#access-token"]').tab('show');
   document.querySelector('#sso-header-link').href = localStorage.getItem('ssoTestClientHref');
-  prettyPrint('access-token-response','#resp-access-token');
-  prettyPrint('user-data-response','#resp-user-data');
+  prettyPrint('access-token-response', '#resp-access-token');
+  prettyPrint('jwt-token', '#resp-jwt-token');
+  prettyPrint('user-data-response', '#resp-user-data');
 
   // Lets generate URL for logout.
   let token = JSON.parse(document.querySelector('#resp-access-token').innerHTML);
@@ -96,18 +97,18 @@ if (step == "settings-tab") {
   let ls_realm = localStorage.getItem('realm');
   let ls_client = localStorage.getItem('clientId');
   let ls_redirect = localStorage.getItem('redirectUrl');
-  
+
   // activate Logout button
   setLogoutButton(ls_ssourl, ls_webcontext, ls_realm, ls_client, ls_redirect, token.access_token, token.refresh_token);
 
 } else if (step == "user-data") {
   pageState = localStorage.getItem('pageState');
-  if( pageState == SAVED ){
-    loadSetting();  
+  if (pageState == SAVED) {
+    loadSetting();
   }
   $('[href="#user-data"]').tab('show');
   document.querySelector('#sso-header-link').href = localStorage.getItem('ssoTestClientHref');
-  prettyPrint('user-data-response','#resp-user-data');
+  prettyPrint('user-data-response', '#resp-user-data');
 }
 
 function loadSetting() {
@@ -122,7 +123,7 @@ function loadSetting() {
   document.querySelector('#state').value = localStorage.getItem('state');
   document.querySelector('#sso-info').innerHTML = localStorage.getItem('loginURL');
 
-  
+
 }
 
 function removeLocalStorage() {
@@ -143,8 +144,8 @@ function resetSetting() {
   location.reload();
 }
 
-window.addEventListener("beforeunload", function(event) {
-   //removeLocalStorage();
+window.addEventListener("beforeunload", function (event) {
+  //removeLocalStorage();
 });
 
 function submitSetting() {
@@ -189,19 +190,19 @@ function submitSetting() {
   document.querySelector('#login').href = loginURL;
   document.querySelector('#login').className = "btn btn-primary";
 
-  
+
 
 
 };
 
-function prettyPrint(parent,id) {
+function prettyPrint(parent, id) {
   var ugly = document.querySelector(id).innerHTML;
   console.log(ugly);
   var obj = JSON.parse(ugly);
   var pretty = JSON.stringify(obj, undefined, 4);
   document.querySelector(id).innerHTML = pretty;
-  for( var key in obj){
-    addElement(parent,key, obj[key]);
+  for (var key in obj) {
+    addElement(parent, key, obj[key]);
   }
 };
 
@@ -244,17 +245,32 @@ function setLogoutButton(ssourl, webcontext, realm, client, redirect, access_tok
 ** <input type="text" class="form-control" value="${ SSO }" id="sso-url">
 ** </div>
 */
-function addElement(parent,key, value) {
+function addElement(parent, key, value) {
   var divKey = document.createElement("div");
-  divKey.className = "json-key"; 
+  divKey.className = "json-key";
   divKey.innerHTML = key;
-  
+
   var divVal = document.createElement("div");
   divVal.className = "json-value";
-  divVal.innerHTML = value;
-  
-  document.getElementById(parent).appendChild(divKey);
-  document.getElementById(parent).appendChild(divVal);
-  
+  // Roles a object with array
+  if ((typeof divVal == 'object') && divKey == 'realm_access') {
+    document.getElementById(parent).appendChild(divKey);
+    var divRoleKey = document.createElement("div");
+    divRoleKey.className = "json-key";
+    divRoleKey.innerHTML = 'roles';
+    document.getElementById(parent).appendChild(divRoleKey);
+
+    for (i = 0; i < divVal.length; i++) {
+      divVal = document.createElement("div");
+      divVal.className = "json-value";
+      divRoleKey.innerHTML = divVal[i];
+      document.getElementById(parent).appendChild(divVal);
+    }
+  } else {
+    divVal.innerHTML = value;
+    document.getElementById(parent).appendChild(divKey);
+    document.getElementById(parent).appendChild(divVal);
+  }
+
 }
 
