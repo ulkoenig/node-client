@@ -1,86 +1,114 @@
-var express = require('express');
-let qs = require('querystring');
-let path = require('path');
+var express = require('express')
+var fs = require('fs')
+var _ = require('lodash')
+//let okd = require('okd-runner')
+let qs = require('querystring')
+let oauth = require('./lib/oauth')
+let pages = require('./lib/pages')
 
-var app = express();
-const PORT = 8080;
-
-function buildURL() {
-
-  const realm = 'demo-1'
-
-  let params = qs.stringify({
-    response_type: 'code',
-    client_id: 'my-client',
-    scope: 'my-scope',
-    state: 'state123',
-    redirect_uri: `${process.env['ROUTE'] || 'URL_NOT_FOUND'}login`
-  })
-
-  return `https://${process.env['SSO']}/auth/realms/${realm}/protocol/openid-connect/auth?${params}`
+let env = {
+  SSO: isSet(process.env['SSO']),
+  WEB_CONTEXT: isSet(process.env['WEB_CONTEXT']),
+  REALM: isSet(process.env['REALM']),
+  CLIENT_ID: isSet(process.env['CLIENT_ID']),
+  KC_IDP_HINT: isSet(process.env['KC_IDP_HINT']),
+  REDIRECT_URL: isSet(process.env['REDIRECT_URL']),
+  STEP: "",
+  ACCESS_CODE: "",
+  ACCESS_TOKEN: "",
+  USER_DATA: ""
 }
 
-function buildIndexPage({ URL }) {
-  return `<!DOCTYPE HTML>
-            <html>
-              <head>
-                <title>Hello OAuth2</title>
-                <script type="text/javascript" src="scripts/main.js" defer></script>
-                <link rel="stylesheet" type="text/css" href="assets/styles.css">
-              </head>
-              <body>
-                <h1> Register </h1>
-                <form>
-                  <label for="ssourl">RHSSO URL:</label>
-                  <input id="ssourl" type="text" required="">
-                  <label for="realm">Realm:</label>
-                  <input id="realm" type="text" required="">
-                  <label for="client">Client:</label>
-                  <input id="client" type="text" required="">
-                  <label for="redirect">Redirect URL:</label>
-                  <input id="redirect" type="text" required="">
-                  
-                  <input id="submitsetting" type="submit" value="Save">
-                </form>
+let page = fs.readFileSync(`./public/views/page.html`);
 
-                <a id="login" href="${URL}" class="disabled">Login</a>
-              </body>
-            </html>`
+function isSet(val) {
+  if (typeof val !== 'undefined' && val) {
+    return val;
+  } else {
+    return "";
+  }
 }
 
-function buildLoginPage({ CODE }) {
-  return `<!DOCTYPE HTML>
-            <html>
-              <head>
-                <title >Hello OAuth2</title>
-                <script type="text/javascript" src="scripts/main.js" defer></script>
-                <link rel="stylesheet" type="text/css" href="assets/styles.css">
-              </head>
-              <body>
-                <h1 id="login-page"> Code </h1>
-                This is the code from realm<div class="realm-class">undefined</div>
-                <div class="code">
-                  The access code is
-                  <div class="access-code">${CODE}</div>
-                </div>
-                <a id="get-access-token" href="" class="disabled">Get Access Token</a>
-              </body>
-            </html>`
-}
+var app = express()
+const PORT = 8080
 
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
-  //let page = buildIndexPage({ URL: buildURL() })
-  //res.send(page)
-  res.sendFile(path.join(__dirname + '/public/views/index.html'));
+  env.STEP = "settings-tab"
+  res.send(render(page, env))
 })
 
 app.get('/login', (req, res) => {
-    // TODO: check code is set, eroor handling if not
-    let page = buildLoginPage({ CODE: req.query.code });
-    res.send(page);
+  // save for later using in env object
+  env.ACCESS_CODE = req.query.code;
+  env.STEP = "access-code-tab";
+  res.send(render(page, env))
 })
+
+app.get('/logout', (req, res) => {
+  // save for later using in env object
+  //env.ACCESS_CODE = req.query.code;
+  env.STEP = "settings-tab";
+  let para = {
+    realm: req.query.realm,
+    sso: req.query.sso_url,
+    redirect_uri: req.query.redirect_uri,
+    web_context: req.query.web_context,
+    refresh_token: req.query.refresh_token,
+    access_token: req.query.access_token,
+    client_id: req.query.client_id
+  }
+  oauth.logout(para)
+      .then(function (resp) {
+        res.send(render(page, env))
+      })
+      .catch(err => res.send(err))
+})
+
+app.get('/token', (req, res) => {
+  console.log('Hallo in token', req.query);
+  if (req.query.code) {
+    let para = {
+      realm: req.query.realm,
+      sso: req.query.sso_url,
+      code: req.query.code,
+      client_id: req.query.client_id,
+      redirect_uri: req.query.redirect_uri,
+      web_context: req.query.web_context
+    }
+    console.log('para', para);
+    oauth.exchangeToken(para)
+      .then(function (resp) {
+        // resp seams not a vaild JSON. Therefore thi stringify and parse fix this problem
+        env.ACCESS_TOKEN = JSON.parse(JSON.stringify(resp));
+        // save access token in para for calling getUserInfo 
+        para.access_token = JSON.parse(resp).access_token,
+        oauth.getUserInfo(para)
+          .then(function (data) {
+            env.USER_DATA = data;
+            env.STEP = 'access-token-tab'
+            //let page = fs.readFileSync(`./public/views/page.html`)
+            res.send(render(page, env))
+          })
+          .catch(err => res.send(err))
+
+      })
+      .catch(err => res.send(err))
+  }
+})
+
+
+
+
+
+function render(page, ctx = {}) {
+  return _.template(page)(ctx)
+}
+
+
+
+
 
 
 // convention over configuration -> 8080

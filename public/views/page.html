@@ -1,0 +1,267 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>RHSSO Test Client</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+  <link rel="stylesheet"
+    href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
+    integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js"
+    integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js"
+    integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9"
+    crossorigin="anonymous"></script>
+  <script type="text/javascript" src="assets/js/main.js" defer></script>
+  <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
+</head>
+
+<body id="${ STEP }">
+  <div class="container-fix sso-container">
+    <div class="sso-header">
+      <a id="sso-header-link" href="#">RHSSO Test Client</a>
+    </div>
+    <div class="col-6">
+      <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="settings-tab" data-toggle="tab" href="#settings" role="tab"
+            aria-controls="settings" aria-selected="true">1. Settings</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="access-code-tab" data-toggle="tab" href="#access-code" role="tab"
+            aria-controls="access-code" aria-selected="false">2. Access Code</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="access-token-tab" data-toggle="tab" href="#access-token" role="tab"
+            aria-controls="access-token" aria-selected="false">3. Access Token</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="user-data-tab" data-toggle="tab" href="#user-data" role="tab"
+            aria-controls="user-data" aria-selected="false">4. User Data</a>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-body">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  <div class="sso-col-header">Server</div>
+                  <div class="form-group">
+                    <label for="sso-url">RHSSO URL</label>
+                    <input type="text" class="form-control" value="${ SSO }" id="sso-url">
+                  </div>
+                  <div class="form-group">
+                    <label for="web-context">Webcontext</label>
+                    <input type="text" class="form-control" value="${ WEB_CONTEXT }" id="web-context">
+                  </div>
+                  <div class="form-group">
+                    <label for="realm">Realm</label>
+                    <input type="text" class="form-control" value="${ REALM }" id="realm">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="kc-idp-hint">Provider ID</label>
+                    <input type="text" class="form-control" value="${ KC_IDP_HINT }" id="kc-idp-hint">
+                  </div>
+
+                </div>
+                <div class="col">
+                  <div class="sso-col-header">Client</div>
+                  <div class="form-group">
+                    <label for="client-id">Id</label>
+                    <input type="text" class="form-control" value="${ CLIENT_ID }" id="client-id">
+                  </div>
+                  <div class="form-group">
+                    <label for="redirect-url">Redirect URL</label>
+                    <input type="text" class="form-control" value="${ REDIRECT_URL }" id="redirect-url">
+                  </div>
+                  <div class="form-group">
+                    <label for="response-type">Response Type</label>
+                    <input type="text" class="form-control" value="code" id="response-type">
+                  </div>
+                  <div class="form-group">
+                    <label for="scope">Scope</label>
+                    <input type="text" class="form-control" value="my-scope" id="scope">
+                  </div>
+                  <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" class="form-control" value="state123" id="state">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col" style="padding: 0px;"></div>
+                <div class="col">
+                  <div class="row">
+                    <div class="col">
+                      <div class="sso-center">
+                        <button id="load-setting" type="submit" class="btn btn-primary" onclick="loadSetting()">Load
+                          Settings</button>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="sso-center">
+                        <button id="reset-setting" type="submit" class="btn btn-primary"
+                          onclick="resetSetting()">Reset</button>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="sso-center">
+                        <!-- <input id="submit-setting" type="submit" value="Save Settings" onclick="submitSetting()"> -->
+                        <button id="submit-setting" type="submit" class="btn btn-primary" onclick="submitSetting()">Save
+                          Settings</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row sso-footer">
+              </div>
+              <div class="row">
+                <div class="col" style="padding: 0px;">
+                  <div id="sso-info" class="alert alert-info" role="alert">
+                    Default values are set from enviroment.
+                    Change if needed, 'Save Settings' and click 'Login'.
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="row">
+                    <div class="col">
+                      <div class="sso-center">
+                        <a id="logout-settings" href="#" class="btn btn-primary sso-logout-button disabled"
+                          role="button" aria-pressed="true">Logout</a>
+                      </div>
+                    </div>
+                    <div class="col"></div>
+                    <div class="col">
+                      <div class="sso-center">
+                        <a id="login" href="#" class="btn btn-primary disabled" role="button"
+                          aria-pressed="true">Login</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="access-code" role="tabpanel" aria-labelledby="access-code-tab">
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-body">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  <div class="sso-col-header">Response after Login</div>
+                  <div class="json-key">Access Code</div>
+                  <div id="resp-access-code" class="json-value" style="margin-bottom: 1rem;">${ ACCESS_CODE }</div>
+                </div>
+              </div>
+
+              <div class="row sso-footer">
+                <div class="col">
+                  <div id="access-code-info" class="alert alert-info" role="alert">
+                    Access code after login.
+                    To get access token click 'Get Access Token'.
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="sso-login-section" style="float: right;">
+                    <a id="get-access-token" href="#" class="btn btn-primary" role="button" aria-pressed="true">Get
+                      Access Token</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="access-token" role="tabpanel" aria-labelledby="access-token-tab">
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-body">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  <div class="sso-col-header">Response from Token Request</div>
+                  <div id="access-token-response"></div>
+                  <div class="form-group" style="margin-top: 1rem;">
+                    <label for="sso-url">JSON</label>
+                    <textarea class="form-control" rows="5" id="resp-access-token">${ ACCESS_TOKEN }</textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row sso-footer">
+                <div class="col">
+                  <div id="access-token-info" class="alert alert-info" role="alert">
+                    Access token after request.
+                    To get user data click 'Get User Data'.
+                  </div>
+                </div>
+                <div class="col">
+
+                  <a id="logout-access-token" href="#" class="btn btn-primary sso-logout-button disabled" role="button"
+                    aria-pressed="true">Logout</a>
+
+
+                  <div class="sso-login-section" style="float: right;">
+
+                    <a id="get-user-data" href="#" class="btn btn-primary" role="button" aria-pressed="true"
+                      onclick="gotoUserData()">Get User
+                      Data</a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="user-data" role="tabpanel" aria-labelledby="user-data-tab">
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-body">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  <div class="sso-col-header">Response from User Data Request</div>
+                  <div id="user-data-response"></div>
+                  <div class="form-group" style="margin-top: 1rem;">
+                    <label for="sso-url">JSON</label>
+                    <textarea class="form-control" rows="1" id="resp-user-data">${ USER_DATA }</textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row sso-footer">
+                <div class="col">
+                  <div id="user-data-info" class="alert alert-info" role="alert">
+                    User Data after request.
+                  </div>
+                </div>
+                <div class="col">
+                  <a id="logout-user-data" href="#" class="btn btn-primary sso-logout-button disabled" role="button"
+                    aria-pressed="true">Logout</a>
+
+                  <div class="sso-login-section" style="float: right;">
+                    <a id="back-to-settings" href="#" class="btn btn-primary" role="button" aria-pressed="true"
+                      onclick="gotoSettings()">Back to Settings</a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+</body>
+
+</html>

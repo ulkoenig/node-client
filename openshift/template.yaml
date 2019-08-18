@@ -1,0 +1,209 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: rhsso-test-client
+  annotations:
+    openshift.io/display-name: "RHSSO Test Client"
+    description: "Simple Web UI to call a Keycloak login page"
+    tags: "keycloak, node.js"
+    iconClass: "icon-nodejs"
+    openshift.io/long-description: "This template defines resources needed to deploy a simple Web UI to call a Keycloak login page"
+    openshift.io/provider-display-name: "TelIt GmbH, ART"
+    openshift.io/documentation-url: "http:tbd.de"
+  message: "The following service(s) have been created in your project: \n\nFor more information about using this template, including OpenShift considerations, see http://gogs-front-end.telitcaas1.t-internal.com/bsb."
+  labels:
+    app: rhsso-test-client
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: ${REPO_URL}
+      type: Git
+      sourceSecret:
+      name: ${SOURCE_SECRET}
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: nodejs:8
+          namespace: openshift
+      type: Source
+    triggers:
+       - type: ConfigChange
+  status:
+    lastVersion: 0
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    generation: 1
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    lookupPolicy:
+      local: false
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${APPLICATION_NAME}
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: ${APPLICATION_NAME}
+          deploymentconfig: ${APPLICATION_NAME}
+      spec:
+        containers:
+        - env:
+          - name: SSO
+            value: ${SSO}
+          - name: CLIENT_ID
+            value: ${CLIENT_ID}
+          - name: REALM
+            value: ${REALM}
+          - name: REDIRECT_URL
+            value: ${REDIRECT_URL}
+          - name: KC_IDP_HINT
+            value: ${KC_IDP_HINT}
+          - name: WEB_CONTEXT
+            value: ${WEB_CONTEXT}          
+          image: docker-registry.default.svc:5000/${PROJECT_NAME}/${APPLICATION_NAME}:latest
+          imagePullPolicy: Always
+          name: ${APPLICATION_NAME}
+          ports:
+          - containerPort: 8080
+            protocol: TCP         
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APPLICATION_NAME}:latest
+          namespace: ${PROJECT_NAME}
+      type: ImageChange
+    - type: ConfigChange           
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: ${APPLICATION_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}         
+- apiVersion: v1    
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+    namespace: {PROJECT_NAME}
+  spec:
+    host: ${APPLICATION_NAME}-${PROJECT_NAME}.${DOMAIN_NAME}
+    port:
+      targetPort: 8080-tcp
+    to:
+      kind: Service
+      name: ${APPLICATION_NAME}
+      weight: 100
+    wildcardPolicy: None             
+parameters:
+- description: The name for the application.
+  name: APPLICATION_NAME
+  required: true
+  value: rhsso-web-ui
+- description: AppAgile Project Name
+  name: PROJECT_NAME
+  required: true
+  value: frontend-bsb
+- description: AppAgile Domain Name
+  name: DOMAIN_NAME
+  required: true
+  value: telitcaas1.t-internal.com
+- description: git repository URL
+  name: REPO_URL
+  required: true
+  value: http://frontend-wbench.psst.t-online.corp/gitlab/hackathon/web-ui.git
+- description: git secret    
+  name: SOURCE_SECRET
+  value: workbench-gitlab
+- description: Keycloak URL
+  name: SSO
+  required: true
+  value: rhsso-frontend-bsb.telitcaas1.t-internal.com
+- description: Keycloak realm
+  name: REALM
+  required: true
+  value: GigabitHub
+- description: Client ID of keycloak realm
+  name: CLIENT_ID
+  required: true
+  value: my-client
+- description: Redirect URL 
+  name: REDIRECT_URL
+  required: true
+- description: KC_IDP_HINT of Provider IDM 
+  name: KC_IDP_HINT
+  required: true
+  value: telekom-empl
+- description: Webcontext, e.g. auth 
+  name: WEB_CONTEXT
+  required: true
+  value: auth    
