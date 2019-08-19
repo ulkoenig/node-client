@@ -253,19 +253,12 @@ function addElement(parent, key, value) {
   var divVal = document.createElement("div");
   divVal.className = "json-value";
   // Roles a object with array
-  if ((typeof divVal == 'object') && divKey == 'realm_access') {
+  if ( typeof divVal == 'object' ){
+    divKey.className = "json-key elm-oject";
     document.getElementById(parent).appendChild(divKey);
-    var divRoleKey = document.createElement("div");
-    divRoleKey.className = "json-key";
-    divRoleKey.innerHTML = 'roles';
-    document.getElementById(parent).appendChild(divRoleKey);
+    addObject(parent,divVal);
 
-    for (i = 0; i < divVal.length; i++) {
-      divVal = document.createElement("div");
-      divVal.className = "json-value";
-      divRoleKey.innerHTML = divVal[i];
-      document.getElementById(parent).appendChild(divVal);
-    }
+    
   } else {
     divVal.innerHTML = value;
     document.getElementById(parent).appendChild(divKey);
@@ -274,3 +267,12 @@ function addElement(parent, key, value) {
 
 }
 
+function addObject(parent, oby){
+  for (var key in obj) {
+    if ( typeof divVal == 'object' ){
+      
+    }else{
+      
+    }
+  }
+}
